@@ -16,32 +16,65 @@ class Player(pygame.sprite.Sprite):
         self.moving_left = False
         self.moving_right = False
 
-        self.speed = 8
+        self.max_speed = 8
+
+        self.acceleration = 0
 
     # Player class event handling
     def events(self):
+        #Reset moving
+        self.moving = False
+        speed = 0
+        
         # Movement keys handling
         keys = pygame.key.get_pressed()
 
         if keys[pygame.K_LEFT] or keys[pygame.K_a]:
-            self.moving_left = True
-        else:
-            self.moving_left = False
+            self.moving = True
+            speed = -0.5
+            self.accelerate(speed)
 
         if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-            self.moving_right = True
+            self.moving = True
+            speed = 0.5
+            self.accelerate(speed)
+
+        if not keys[pygame.K_d] and not keys[pygame.K_a]:
+            if self.acceleration != 0:
+                self.moving = True
+            self.accelerate(speed)
+
+    #Accelerate the player movement with acc_movement
+    def accelerate(self, acc_movement):
+        if acc_movement > 0:
+            if self.acceleration == self.max_speed:
+                self.acceleration = self.max_speed
+                
+            elif acc_movement < self.max_speed:
+                self.acceleration += acc_movement
+
+        elif acc_movement < 0:
+            if self.acceleration == -self.max_speed:
+                self.acceleration = -self.max_speed
+                
+            elif acc_movement > -self.max_speed:
+                self.acceleration += acc_movement
+
+        #If acceleration is 0, slowly make acceleration slower        
         else:
-            self.moving_right = False
+            if self.acceleration != 0:
+                if self.acceleration > 0:
+                    self.acceleration -= 0.5
+                elif self.acceleration < 0:
+                    self.acceleration += 0.5  
 
     # Update the player class
     def update(self):
         self.events()
 
         # Make player move
-        if self.moving_left:
-            self.rect.x -= self.speed
-        if self.moving_right:
-            self.rect.x += self.speed
+        if self.moving:
+            self.rect.x += self.acceleration
 
     # Player drawing function
     def draw(self, display):
