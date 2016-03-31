@@ -1,6 +1,7 @@
 import pygame
 
 from settings import *
+from sprites import *
 
 # Create the game class
 class Game:
@@ -15,6 +16,10 @@ class Game:
 
     # Starting a new game
     def new(self):
+        # Creating an instance of the player
+        self.player = Player()
+
+        # Starting the game loop
         self.loop()
 
     # Game loop
@@ -33,14 +38,20 @@ class Game:
                 if self.playing:
                     self.playing = False
                 self.running = False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    pass
 
     # Game loop - Updates
     def update(self):
-        pass
+        self.player.update()
 
     # Game loop - Draw
     def draw(self):
         self.game_display.fill(white)
+
+        self.player.draw(self.game_display)
+
         pygame.display.update()
 
 # Creating the game object
