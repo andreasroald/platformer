@@ -2,6 +2,7 @@ import pygame
 
 from settings import *
 from sprites import *
+from levels import *
 
 # Create the game class
 class Game:
@@ -14,10 +15,30 @@ class Game:
         self.clock = pygame.time.Clock()
         self.running = True # To exit the game completely, make running False
 
+    # Function that creates a level from a list
+    def create_level(self, level):
+        level_x = 0
+        level_y = 0
+        for rows in level:
+            for cols in rows:
+                if cols == 1:
+                    w = Wall(level_x, level_y, 32, 32)
+                    self.walls.add(w)
+
+                level_x += 32
+            level_x = 0
+            level_y += 32
+
     # Starting a new game
     def new(self):
+        # Sprite groups
+        self.walls = pygame.sprite.Group()
+
         # Creating an instance of the player
-        self.player = Player()
+        self.player = Player(self.walls)
+
+        # Create the level
+        self.create_level(level)
 
         # Starting the game loop
         self.loop()
@@ -40,17 +61,26 @@ class Game:
                 self.running = False
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
-                    pass
+                    self.player.jump()
 
     # Game loop - Updates
     def update(self):
         self.player.update()
+
+        # Reset game if player is out of the screen
+        if self.player.rect.x < -64:
+            self.playing = False
+        elif self.player.rect.x > display_width:
+            self.playing = False
+        elif self.player.rect.y > display_height+64:
+            self.playing = False
 
     # Game loop - Draw
     def draw(self):
         self.game_display.fill(white)
 
         self.player.draw(self.game_display)
+        self.walls.draw(self.game_display)
 
         pygame.display.update()
 

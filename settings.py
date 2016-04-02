@@ -10,3 +10,7 @@ display_width = 800
 display_height = 640
 title = "Platformer"
 FPS = 60
+
+# Player variables
+player_acc = 0.5
+player_grav = 0.7
