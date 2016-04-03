@@ -24,6 +24,8 @@ class Player(pygame.sprite.Sprite):
         self.y_velocity = 0
 
         self.jumping = False
+        self.jump_rect = pygame.Rect((0, 0, 64, 32))
+        self.should_jump = False
 
         # Solid list is the sprite group that contains the walls
         self.solid_list = solid_list
@@ -78,15 +80,30 @@ class Player(pygame.sprite.Sprite):
         else:
             if self.x_velocity != 0:
                 if self.x_velocity > 0:
-                    self.x_velocity -= player_acc
+                    # Decelerate faster than you accelerate
+                    if self.x_velocity - player_acc * 3 > 0:
+                        self.x_velocity -= player_acc * 3
+                    else:
+                        self.x_velocity -= player_acc
                 elif self.x_velocity < 0:
-                    self.x_velocity += player_acc
+                    if self.x_velocity + player_acc * 3 < 0:
+                        self.x_velocity += player_acc * 3
+                    else:
+                        self.x_velocity += player_acc
 
     # Make the player jump
     def jump(self):
         if not self.jumping:
             self.jumping = True
-            self.y_velocity = -19
+            self.y_velocity = -15
+
+    # If space is pressed and the jump rect is touching the ground, jump automaticly right after landing
+    # This makes the game feel more responsive and prevents the "aw shit i pressed space why didnt i jump" - situations
+    def test_for_jump(self):
+        for tiles in self.solid_list:
+            if self.jump_rect.colliderect(tiles.rect):
+                self.should_jump = True
+                break
 
     # Update the player class
     def update(self):
@@ -101,7 +118,7 @@ class Player(pygame.sprite.Sprite):
         for hits in hit_list:
             if self.x_velocity > 0:
                 self.rect.right = hits.rect.left
-                self.x_velocity = player_acc
+                self.x_velocity = player_acc # Set x_velocity to player_acc/-player_acc so that x_velocity doesnt build up
             else:
                 self.rect.left = hits.rect.right
                 self.x_velocity = -player_acc
@@ -118,6 +135,11 @@ class Player(pygame.sprite.Sprite):
                 self.rect.bottom = hits.rect.top
                 self.y_velocity = player_grav # Set y_velocity to player_grav so that y_velocity doesnt build up
                 self.jumping = False
+
+                if self.should_jump:
+                    self.jump()
+                    self.should_jump = False
+
                 break
             else:
                 self.rect.top = hits.rect.bottom
@@ -127,6 +149,10 @@ class Player(pygame.sprite.Sprite):
         # If loop doesnt break, then player is in-air and shouldnt be able to jump
         else:
             self.jumping = True
+
+        # Reposition jump Rect
+        self.jump_rect.top = self.rect.bottom
+        self.jump_rect.x = self.rect.x
 
     # Player drawing function
     def draw(self, display):

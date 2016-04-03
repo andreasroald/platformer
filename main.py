@@ -15,10 +15,15 @@ class Game:
         self.clock = pygame.time.Clock()
         self.running = True # To exit the game completely, make running False
 
-    # Function that creates a level from a list
+    # Function that creates a level from a list and returns the level list
     def create_level(self, level):
         level_x = 0
-        level_y = 0
+
+        if len(level) <= 20:
+            level_y = 0
+        else:
+            level_y = 0 - (32 * (len(level) - 20))
+
         for rows in level:
             for cols in rows:
                 if cols == 1:
@@ -29,6 +34,8 @@ class Game:
             level_x = 0
             level_y += 32
 
+        return level
+
     # Starting a new game
     def new(self):
         # Sprite groups
@@ -37,8 +44,8 @@ class Game:
         # Creating an instance of the player
         self.player = Player(self.walls)
 
-        # Create the level
-        self.create_level(level)
+        # Create the level and set current_level to its level list (used for camera movement)
+        self.current_level = self.create_level(level)
 
         # Starting the game loop
         self.loop()
@@ -60,8 +67,11 @@ class Game:
                     self.playing = False
                 self.running = False
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
-                    self.player.jump()
+                if event.key == pygame.K_SPACE or event.key == pygame.K_w:
+                    if self.player.jumping:
+                        self.player.test_for_jump()
+                    else:
+                        self.player.jump()
 
     # Game loop - Updates
     def update(self):

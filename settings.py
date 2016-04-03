@@ -12,5 +12,5 @@ title = "Platformer"
 FPS = 60
 
 # Player variables
-player_acc = 0.5
-player_grav = 0.7
+player_acc = 1
+player_grav = 0.5
