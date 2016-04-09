@@ -1,3 +1,5 @@
+import random
+
 import pygame
 
 from settings import *
@@ -19,6 +21,7 @@ class Game:
     def create_level(self, level):
         level_x = 0
 
+        # Make the bottom-left tile aligned with the bottom-left of the screen
         if len(level) <= 20:
             level_y = 0
         else:
@@ -46,6 +49,12 @@ class Game:
 
         # Create the level and set current_level to its level list (used for camera movement)
         self.current_level = self.create_level(level)
+
+        # We blit surfaces to the world surface, then blit the world surface to the game display
+        self.world_surface = pygame.Surface((len(self.current_level[0]) * 32, display_height))
+
+        # Camera variables
+        self.cam_x_offset = 0
 
         # Starting the game loop
         self.loop()
@@ -77,20 +86,34 @@ class Game:
     def update(self):
         self.player.update()
 
+        # Camera scrolling
+        if self.player.rect.center[0] > self.cam_x_offset + 800 / 2:
+            if self.player.x_velocity > 0 and self.cam_x_offset < (len(self.current_level[0]) - 26) * 32:
+                self.cam_x_offset += abs(self.player.x_velocity)
+
+        if self.player.rect.center[0] < self.cam_x_offset + 800 / 2:
+            if self.player.x_velocity < 0 and self.cam_x_offset > 0:
+                self.cam_x_offset -= abs(self.player.x_velocity)
+
+        if self.cam_x_offset < 0:
+            self.cam_x_offset = 0
+
+
         # Reset game if player is out of the screen
-        if self.player.rect.x < -64:
-            self.playing = False
-        elif self.player.rect.x > display_width:
-            self.playing = False
-        elif self.player.rect.y > display_height+64:
+        if self.player.rect.y > display_height+64:
             self.playing = False
 
     # Game loop - Draw
     def draw(self):
         self.game_display.fill(white)
 
-        self.player.draw(self.game_display)
-        self.walls.draw(self.game_display)
+        self.world_surface.fill(white)
+        self.player.draw(self.world_surface)
+        self.walls.draw(self.world_surface)
+
+        self.game_display.blit(self.world_surface, (0-self.cam_x_offset, 0))
+
+
 
         pygame.display.update()
 
