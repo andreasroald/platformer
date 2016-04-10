@@ -11,7 +11,7 @@ class Player(pygame.sprite.Sprite):
         self.image = pygame.Surface((64, 128))
         self.image.fill(red)
         self.rect = self.image.get_rect()
-        self.rect.center = (display_width/2, display_height/2)
+        self.rect.center = (64, 128)
 
         self.moving = False
         self.left_lock = False

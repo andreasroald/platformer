@@ -56,6 +56,9 @@ class Game:
         # Camera variables
         self.cam_x_offset = 0
 
+        # Screen shake variables
+        self.shake_amount = 0
+
         # Starting the game loop
         self.loop()
 
@@ -86,7 +89,7 @@ class Game:
     def update(self):
         self.player.update()
 
-        # Camera scrolling
+        # Horizontal Camera scrolling
         if self.player.rect.center[0] > self.cam_x_offset + 800 / 2:
             if self.player.x_velocity > 0 and self.cam_x_offset < (len(self.current_level[0]) - 26) * 32:
                 self.cam_x_offset += abs(self.player.x_velocity)
@@ -103,17 +106,24 @@ class Game:
         if self.player.rect.y > display_height+64:
             self.playing = False
 
+        # Slowly stop screen shake
+        if self.shake_amount > 0:
+            self.shake_amount -= 0.3
+
     # Game loop - Draw
     def draw(self):
-        self.game_display.fill(white)
 
         self.world_surface.fill(white)
         self.player.draw(self.world_surface)
         self.walls.draw(self.world_surface)
 
-        self.game_display.blit(self.world_surface, (0-self.cam_x_offset, 0))
-
-
+        # If shake amount is more than 0, blit the world at a random location between
+        # negative and positive shake amount, instead of 0, 0
+        if self.shake_amount > 0:
+            self.game_display.blit(self.world_surface, (random.randint(int(-self.shake_amount), int(self.shake_amount))-self.cam_x_offset,
+                                                        random.randint(int(-self.shake_amount), int(self.shake_amount))))
+        else:
+            self.game_display.blit(self.world_surface, (0-self.cam_x_offset, 0))
 
         pygame.display.update()
 
