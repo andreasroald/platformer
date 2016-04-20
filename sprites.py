@@ -1,6 +1,7 @@
 import pygame
 
 from settings import *
+from resources import *
 
 # Player class
 class Player(pygame.sprite.Sprite):
@@ -8,8 +9,7 @@ class Player(pygame.sprite.Sprite):
     def __init__(self, solid_list):
         pygame.sprite.Sprite.__init__(self)
 
-        self.image = pygame.Surface((64, 128))
-        self.image.fill(red)
+        self.image = player_standing
         self.rect = self.image.get_rect()
         self.rect.center = (64, 128)
 
@@ -18,7 +18,7 @@ class Player(pygame.sprite.Sprite):
         self.right_lock = False
 
         self.acceleration = 0
-        self.x_top_speed = 8
+        self.x_top_speed = 6
         self.y_top_speed = 30
         self.x_velocity = 0
         self.y_velocity = 0
@@ -26,6 +26,11 @@ class Player(pygame.sprite.Sprite):
         self.jumping = False
         self.jump_rect = pygame.Rect((0, 0, 64, 32))
         self.should_jump = False
+
+        self.walk_index = 1
+        self.walk_counter = 0
+        # The walk list is changed based on direction in the event handling
+        self.walk_list = player_list_right
 
         # Solid list is the sprite group that contains the walls
         self.solid_list = solid_list
@@ -44,6 +49,7 @@ class Player(pygame.sprite.Sprite):
             self.moving = True
             self.acceleration = -player_acc
             self.accelerate(self.acceleration)
+            self.walk_list = player_list_left
         else:
             self.right_lock = False
 
@@ -52,6 +58,7 @@ class Player(pygame.sprite.Sprite):
             self.moving = True
             self.acceleration = player_acc
             self.accelerate(self.acceleration)
+            self.walk_list = player_list_right
         else:
             self.left_lock = False
 
@@ -80,14 +87,13 @@ class Player(pygame.sprite.Sprite):
         else:
             if self.x_velocity != 0:
                 if self.x_velocity > 0:
-                    # Decelerate faster than you accelerate
-                    if self.x_velocity - player_acc * 3 > 0:
-                        self.x_velocity -= player_acc * 3
+                    if self.x_velocity - player_acc > 0:
+                        self.x_velocity -= player_acc
                     else:
                         self.x_velocity -= player_acc
                 elif self.x_velocity < 0:
-                    if self.x_velocity + player_acc * 3 < 0:
-                        self.x_velocity += player_acc * 3
+                    if self.x_velocity + player_acc < 0:
+                        self.x_velocity += player_acc
                     else:
                         self.x_velocity += player_acc
 
@@ -149,6 +155,26 @@ class Player(pygame.sprite.Sprite):
         # If loop doesnt break, then player is in-air and shouldnt be able to jump
         else:
             self.jumping = True
+
+        # Walk animatiions
+        if self.moving:
+            self.walk_counter = (self.walk_counter + 1) % 15
+            if self.walk_counter == 14:
+                self.image = self.walk_list[self.walk_index]
+                self.walk_index += 1
+                if self.walk_index > 2:
+                    self.walk_index = 1
+        else:
+            self.image = self.walk_list[0]
+
+        # Change image if player is jumping
+        if self.jumping:
+            # Left lock is on if the player is moving right, and vice versa
+            if self.left_lock:
+                self.image = player_sprite_jump_3
+            elif self.right_lock:
+                self.image = player_sprite_jump_3_left
+
 
         # Reposition jump Rect
         self.jump_rect.top = self.rect.bottom

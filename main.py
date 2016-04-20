@@ -91,7 +91,7 @@ class Game:
 
         # Horizontal Camera scrolling
         if self.player.rect.center[0] > self.cam_x_offset + 800 / 2:
-            if self.player.x_velocity > 0 and self.cam_x_offset < (len(self.current_level[0]) - 26) * 32:
+            if self.player.x_velocity > 0 and self.cam_x_offset < (len(self.current_level[0]) - 25) * 32:
                 self.cam_x_offset += abs(self.player.x_velocity)
 
         if self.player.rect.center[0] < self.cam_x_offset + 800 / 2:
@@ -105,6 +105,7 @@ class Game:
         # Reset game if player is out of the screen
         if self.player.rect.y > display_height+64:
             self.playing = False
+
 
         # Slowly stop screen shake
         if self.shake_amount > 0:
